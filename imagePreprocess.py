@@ -3,7 +3,12 @@ from PIL import Image, ImageOps
 
 
 def preprocess(image: Image.Image):                # self refers to the entire app object — the whole DigitRecognizerApp class. The image is self.image, which is one attribute stored inside that object.
-    image = ImageOps.invert(image)    # It turns your image from "dark digit on white background" into "bright digit on black background" — which matches what the model learned from.
+    # If average pixel is bright (light background), invert
+    # If average pixel is dark (dark background), leave as is
+    avg_pixel = np.array(image).mean()
+    if avg_pixel > 127:
+        image = ImageOps.invert(image)
+        
     bbox = image.getbbox()      # getbbox() finds the bounding box of non-black pixels — basically "where is the digit drawn?" If the canvas is empty, bbox is None, so we return early.
     if bbox is None:
         return None
