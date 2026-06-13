@@ -6,22 +6,24 @@ from tensorflow import keras   # tensorflow and keras (which is built on tensorf
 
 X_train = X_train / 255.0
 X_test = X_test/ 255.0
-X_train = X_train.reshape(-1, 784)      # The -1 means "figure out the count automatically." So -1, 784 means "however many images there are, each becomes 784 numbers."
-X_test = X_test.reshape(-1, 784)
+X_train = X_train.reshape(-1, 28, 28, 1)
+X_test = X_test.reshape(-1, 28, 28, 1)
 
-# Build ANN model
+# CNN — replaces it entirely
 model = keras.Sequential([
-    keras.layers.Dense(512, activation='relu', input_shape=(784,)),
-    keras.layers.Dropout(0.2),
-    keras.layers.Dense(256, activation='relu'),
-    keras.layers.Dropout(0.2),
+    keras.layers.Conv2D(32, (3,3), activation='relu', input_shape=(28, 28, 1)),  # input_shape changes here
+    keras.layers.MaxPooling2D(2, 2),
+    keras.layers.Conv2D(64, (3,3), activation='relu'),
+    keras.layers.MaxPooling2D(2, 2),
+    keras.layers.Flatten(),
     keras.layers.Dense(128, activation='relu'),
-    keras.layers.Dense(10,  activation='softmax')
+    keras.layers.Dropout(0.3),
+    keras.layers.Dense(10, activation='softmax')
 ])
 
 # Compile & Train
 model.compile(optimizer='adam',
-              loss= 'sparse_categorical_crossentropy,
+              loss= 'sparse_categorical_crossentropy',
               metrics=['accuracy'])
 
 #  Before training you have to compile — this sets up how the training process works.

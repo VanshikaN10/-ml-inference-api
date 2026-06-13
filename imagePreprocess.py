@@ -24,6 +24,6 @@ def preprocess(image: Image.Image):                # self refers to the entire a
     new_img.paste(img, (offset_x, offset_y))         # This pastes image onto the blank 28×28 image.
 
     img_array = np.array(new_img) / 255.0            # Converts to numpy, divides by 255 to get values between 0–1 (same as training), and flattens 28×28 into a 784-length array because your model's input layer expects (784,).
-    img_array = img_array.reshape(1, 784)            # reshape(1, 784) means "1 image, 784 pixels"
+    img_array = img_array.reshape(1, 28, 28, 1)           # reshape(1, 784) means "1 image, 784 pixels"
     return img_array                                 # These are two separate jobs deliberately. Processing the image and running the model are different responsibilities. That is why no model reference here.
 
