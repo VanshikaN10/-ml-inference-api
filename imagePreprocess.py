@@ -8,7 +8,7 @@ def preprocess(image: Image.Image):                # self refers to the entire a
     avg_pixel = np.array(image).mean()
     if avg_pixel > 127:
         image = ImageOps.invert(image)
-        
+
     bbox = image.getbbox()      # getbbox() finds the bounding box of non-black pixels — basically "where is the digit drawn?" If the canvas is empty, bbox is None, so we return early.
     if bbox is None:
         return None
