@@ -1,0 +1,39 @@
+ML Inference API — don't frame it as "I built an ML model and served it." Frame it as "I built a production backend system with async queuing, caching, and rate limiting that happens to serve an ML model." The ML model is almost incidental. The infrastructure is the point.
+
+STEP 1 — train.py
+Train the model, save digit_recognizer.h5
+(done ✓)
+
+STEP 2 — main.py
+FastAPI server
+Loads the .h5 file
+Receives image over HTTP
+Returns prediction as JSON
+
+STEP 3 — preprocess.py
+Standalone preprocessing function
+Takes uploaded image
+Returns (1, 784) array ready for model
+
+STEP 4 — input validation + error handling
+What if someone sends a PDF? A blank image? Nothing?
+Handle bad inputs gracefully
+
+STEP 5 — Dockerfile
+Package everything into a container
+So it runs the same anywhere
+
+STEP 6 — Deploy on Render
+Put the container on the internet
+Give it a real URL
+
+STEP 7 — Request logging
+Record every request
+What was sent, what was predicted, when
+
+
+
+
+
+for running 
+C:\Users\Vanshika\venv\Scripts\uvicorn.exe main:app --reload------>in the terminal of the project folder
