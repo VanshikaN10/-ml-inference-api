@@ -20,10 +20,8 @@ model = keras.models.load_model("digit_recognizer.h5", compile=False)
 # Connect to Redis
 # REDIS_HOST comes from docker-compose environment variable
 # Falls back to 'localhost' when running without docker-compose
-redis_client = redis.Redis(
-    host=os.getenv('REDIS_HOST', 'localhost'),
-    port=6379,
-    db=0
+redis_client = redis.from_url(
+    os.getenv('REDIS_URL', 'redis://localhost:6379')
 )
 
 
