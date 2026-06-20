@@ -5,18 +5,18 @@ from tensorflow import keras   # tensorflow and keras (which is built on tensorf
 
 
 X_train = X_train / 255.0
-X_test = X_test/ 255.0
+X_test = X_test/255.0
 X_train = X_train.reshape(-1, 28, 28, 1)
 X_test = X_test.reshape(-1, 28, 28, 1)
 
 # CNN — replaces it entirely
 model = keras.Sequential([
-    keras.layers.Conv2D(32, (3,3), activation='relu', input_shape=(28, 28, 1)),  # input_shape changes here
+    keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),  # Creates 32 filters running simultaneously, each 3×3 pixels. Each filter slides across the entire image looking for one specific feature — an edge, a curve, a corner. 32 filters = 32 different features detected simultaneously.
+    keras.layers.MaxPooling2D(2, 2),   # Takes each 2×2 block and keeps only the highest value for Making the image smaller (26×26 → 13×13) for less computation and for making detection slightly position tolerant.
+    keras.layers.Conv2D(64, (3, 3), activation='relu'),
     keras.layers.MaxPooling2D(2, 2),
-    keras.layers.Conv2D(64, (3,3), activation='relu'),
-    keras.layers.MaxPooling2D(2, 2),
-    keras.layers.Flatten(),
-    keras.layers.Dense(128, activation='relu'),
+    keras.layers.Flatten(),   # NOW it flattens — but only after spatial features are already extracted.
+    keras.layers.Dense(128, activation='relu'),  # Standard layers you already know — same as ANN from here. Takes the extracted features and classifies into 0–9.
     keras.layers.Dropout(0.3),
     keras.layers.Dense(10, activation='softmax')
 ])

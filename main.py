@@ -4,6 +4,10 @@ from PIL import Image
 import numpy as np
 from imagePreprocess import preprocess
 import io
+import redis      # the Python library that lets your code talk to Redis database
+import hashlib    # for creating the image hash for redis cache
+import json       # for converting result to string for storage
+import os         # for reading environment variables
 
 
 
@@ -12,7 +16,18 @@ app = FastAPI()    # Create the FastAPI app. This one line creates your entire w
 
 model = keras.models.load_model("digit_recognizer.h5", compile=False)
 
-# Written outside the function deliberately. Loads when server starts, stays in memory.
+
+# Connect to Redis
+# REDIS_HOST comes from docker-compose environment variable
+# Falls back to 'localhost' when running without docker-compose
+redis_client = redis.Redis(
+    host=os.getenv('REDIS_HOST', 'localhost'),
+    port=6379,
+    db=0
+)
+
+
+# Written outside the function deliberately. Loads when server starts, stays in memory(RAM).
 # Loading inside the endpoint/function would reload it on every request — very slow
 
 
@@ -40,6 +55,15 @@ async def predict(file: UploadFile = File(...)):   # file: UploadFile means the 
     except Exception:
         raise HTTPException(status_code=400, detail="Could not read image file. It may be corrupted.")
 
+# Redis cache
+    # Hash the image bytes to create a unique cache key
+    image_hash = hashlib.md5(contents).hexdigest()  # Converts image bytes → 32 character unique string. Same image = same string every time.
+
+    # Look up hash in Redis — if found, return cached result immediately
+    cached_result = redis_client.get(image_hash)
+    if cached_result:
+        return json.loads(cached_result)  # return without running model
+
 
     # Preprocess the image(crops, pads, resizes to 28×28, normalizes, reshapes to (1, 784).Returns a numpy array ready for the model)
     img_array = preprocess(image)
@@ -66,11 +90,18 @@ async def predict(file: UploadFile = File(...)):   # file: UploadFile means the 
             for i in top3_idx
         ]
 
-        return {
+        result = {
             "digit": digit,
             "confidence": confidence,
             "top3": top3
         }
+
+        # Store result in Redis cache
+        # 3600 seconds = 1 hour expiry
+        redis_client.setex(image_hash, 3600, json.dumps(result))
+
+        return result
+
 
     except Exception:
         raise HTTPException(status_code=500, detail="Prediction failed. Something went wrong on the server.")
